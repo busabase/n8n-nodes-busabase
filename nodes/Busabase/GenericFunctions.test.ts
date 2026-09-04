@@ -1,10 +1,8 @@
-/*
- * eslint-disable n8n-nodes-base/node-param-display-name-miscased --
- * The { name, value } pairs below are ASSERTION DATA: the exact options the
- * loader returns for real Bases, slug casing and all. They are not UI parameter
- * definitions, and title-casing them would make the tests assert something the
- * API never returns.
- */
+/* eslint-disable n8n-nodes-base/node-param-display-name-miscased --
+   The { name, value } pairs below are ASSERTION DATA: the exact options the
+   loader returns for real Bases, slug casing and all. They are not UI parameter
+   definitions, and title-casing them would make the tests assert something the
+   API never returns. */
 import { describe, expect, it, vi } from "vitest";
 import { busabaseApiRequest, getBaseFields, getBases } from "./GenericFunctions";
 

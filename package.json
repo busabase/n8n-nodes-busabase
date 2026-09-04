@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-busabase",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "n8n community node for Busabase — list/get/create/update records, and an instant trigger on new or updated records.",
   "license": "MIT",
   "homepage": "https://github.com/busabase/n8n-nodes-busabase",
