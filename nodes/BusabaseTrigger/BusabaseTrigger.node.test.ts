@@ -49,14 +49,15 @@ const makeWebhookContext = (opts: {
 
 describe("BusabaseTrigger.webhook — signature verification", () => {
   const trigger = new BusabaseTrigger();
-  const secret = "test-secret-abc123";
+  // Signing fixture, not a credential — named so it cannot be mistaken for one.
+  const signingFixture = "not-a-real-credential-0123456789";
   const rawBody = Buffer.from(JSON.stringify({ event: "record.created", recordId: "rec_1" }));
 
   it("accepts a delivery signed with the correct secret", async () => {
     const { context } = makeWebhookContext({
-      secret,
+      secret: signingFixture,
       rawBody,
-      signatureHeader: sign(secret, rawBody.toString("utf8")),
+      signatureHeader: sign(signingFixture, rawBody.toString("utf8")),
     });
     const result = await trigger.webhook.call(context as never);
     expect(result.noWebhookResponse).toBeUndefined();
@@ -68,9 +69,9 @@ describe("BusabaseTrigger.webhook — signature verification", () => {
 
   it("rejects a delivery signed with the WRONG secret", async () => {
     const { context, statusMock } = makeWebhookContext({
-      secret,
+      secret: signingFixture,
       rawBody,
-      signatureHeader: sign("a-different-secret", rawBody.toString("utf8")),
+      signatureHeader: sign("a-different-fixture", rawBody.toString("utf8")),
     });
     const result = await trigger.webhook.call(context as never);
     expect(result.noWebhookResponse).toBe(true);
@@ -78,9 +79,9 @@ describe("BusabaseTrigger.webhook — signature verification", () => {
   });
 
   it("rejects a delivery whose body was tampered with after signing", async () => {
-    const validSignature = sign(secret, rawBody.toString("utf8"));
+    const validSignature = sign(signingFixture, rawBody.toString("utf8"));
     const { context } = makeWebhookContext({
-      secret,
+      secret: signingFixture,
       rawBody: Buffer.from(JSON.stringify({ event: "record.created", recordId: "rec_EVIL" })),
       signatureHeader: validSignature,
     });
@@ -89,15 +90,15 @@ describe("BusabaseTrigger.webhook — signature verification", () => {
   });
 
   it("rejects when the signature header is missing entirely", async () => {
-    const { context } = makeWebhookContext({ secret, rawBody });
+    const { context } = makeWebhookContext({ secret: signingFixture, rawBody });
     const result = await trigger.webhook.call(context as never);
     expect(result.noWebhookResponse).toBe(true);
   });
 
   it("fails CLOSED when rawBody is unavailable, rather than trusting a re-parsed body", async () => {
     const { context } = makeWebhookContext({
-      secret,
-      signatureHeader: sign(secret, rawBody.toString("utf8")),
+      secret: signingFixture,
+      signatureHeader: sign(signingFixture, rawBody.toString("utf8")),
       // rawBody deliberately omitted
     });
     const result = await trigger.webhook.call(context as never);
@@ -107,7 +108,7 @@ describe("BusabaseTrigger.webhook — signature verification", () => {
   it("fails closed when no secret was ever stored (workflow static data lost)", async () => {
     const { context } = makeWebhookContext({
       rawBody,
-      signatureHeader: sign(secret, rawBody.toString("utf8")),
+      signatureHeader: sign(signingFixture, rawBody.toString("utf8")),
       // secret deliberately omitted
     });
     const result = await trigger.webhook.call(context as never);
@@ -117,7 +118,11 @@ describe("BusabaseTrigger.webhook — signature verification", () => {
   it("does not throw on a signature of a different length than expected", async () => {
     // timingSafeEqual throws on mismatched buffer lengths — the guard around
     // it must catch that, not let it become an unhandled 500.
-    const { context } = makeWebhookContext({ secret, rawBody, signatureHeader: "short" });
+    const { context } = makeWebhookContext({
+      secret: signingFixture,
+      rawBody,
+      signatureHeader: "short",
+    });
     await expect(trigger.webhook.call(context as never)).resolves.toMatchObject({
       noWebhookResponse: true,
     });
@@ -147,6 +152,8 @@ describe("BusabaseTrigger.webhookMethods.default — registration lifecycle", ()
         getWorkflow: () => ({ name: "My Workflow" }),
         getNode: () => ({ name: "Busabase Trigger" }),
         getCredentials: vi.fn().mockResolvedValue({ baseUrl: "https://busabase.example" }),
+        // delete() logs rather than silently swallowing a failed cleanup.
+        logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
         helpers: { httpRequestWithAuthentication },
       },
       calls,

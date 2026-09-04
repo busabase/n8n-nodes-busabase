@@ -5,10 +5,11 @@ import type {
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
+  JsonObject,
   ResourceMapperFields,
   ResourceMapperValue,
 } from "n8n-workflow";
-import { NodeConnectionTypes, NodeOperationError } from "n8n-workflow";
+import { NodeApiError, NodeConnectionTypes, NodeOperationError } from "n8n-workflow";
 import { busabaseApiRequest, getBaseFields, getBases } from "./GenericFunctions";
 
 interface RecordListPage {
@@ -23,6 +24,7 @@ export class Busabase implements INodeType {
     icon: "file:busabase.svg",
     group: ["transform"],
     version: 1,
+    usableAsTool: true,
     subtitle: '={{$parameter["operation"]}}',
     description: "List, get, create, and update records in a Busabase Base",
     defaults: { name: "Busabase" },
@@ -44,14 +46,14 @@ export class Busabase implements INodeType {
         default: "list",
       },
       {
-        displayName: "Base",
+        displayName: "Base Name or ID",
         name: "baseId",
         type: "options",
         typeOptions: { loadOptionsMethod: "getBases" },
         default: "",
         required: true,
         description:
-          "The Base to operate on. On Update this only drives the field-mapping UI below — the API call itself is addressed by Record ID.",
+          'The Base to operate on. On Update this only drives the field-mapping UI below — the API call itself is addressed by Record ID. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
       },
 
       // ── List ──────────────────────────────────────────────────────────
@@ -60,6 +62,7 @@ export class Busabase implements INodeType {
         name: "returnAll",
         type: "boolean",
         default: false,
+        description: "Whether to return all results or only up to a given limit",
         displayOptions: { show: { operation: ["list"] } },
       },
       {
@@ -68,6 +71,7 @@ export class Busabase implements INodeType {
         type: "number",
         typeOptions: { minValue: 1, maxValue: 100 },
         default: 50,
+        description: "Max number of results to return",
         displayOptions: { show: { operation: ["list"], returnAll: [false] } },
       },
       {
@@ -101,7 +105,7 @@ export class Busabase implements INodeType {
         default: "",
         placeholder: "email",
         description:
-          "The field's slug (not its display name) — visible in the Base's field settings.",
+          "The field's slug (not its display name) — visible in the Base's field settings",
         displayOptions: { show: { operation: ["get"], selectBy: ["field"] } },
       },
       {
@@ -109,7 +113,7 @@ export class Busabase implements INodeType {
         name: "fieldValue",
         type: "string",
         default: "",
-        description: "Matched by exact value.",
+        description: "Matched by exact value",
         displayOptions: { show: { operation: ["get"], selectBy: ["field"] } },
       },
 
@@ -158,7 +162,7 @@ export class Busabase implements INodeType {
         type: "string",
         default: "",
         placeholder: "Created via n8n",
-        description: "Shown to a human reviewer if this change is not auto-merged.",
+        description: "Shown to a human reviewer if this change is not auto-merged",
         displayOptions: { show: { operation: ["create", "update"] } },
       },
       {
@@ -248,7 +252,10 @@ export class Busabase implements INodeType {
           returnData.push({ error: error instanceof Error ? error.message : String(error) });
           continue;
         }
-        throw error;
+        // Wrapped rather than rethrown raw: NodeApiError is what gives the user
+        // the failing node, the HTTP status and the response body in n8n's UI —
+        // a bare Error surfaces as an unattributed stack trace.
+        throw new NodeApiError(this.getNode(), error as JsonObject);
       }
     }
 

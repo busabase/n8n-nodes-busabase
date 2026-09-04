@@ -7,7 +7,7 @@ import type {
   IWebhookFunctions,
   IWebhookResponseData,
 } from "n8n-workflow";
-import { NodeConnectionTypes } from "n8n-workflow";
+import { NodeConnectionTypes, NodeOperationError } from "n8n-workflow";
 import { busabaseApiRequest, getBases } from "../Busabase/GenericFunctions";
 
 /**
@@ -71,12 +71,13 @@ export class BusabaseTrigger implements INodeType {
         default: "new",
       },
       {
-        displayName: "Base",
+        displayName: "Base Name or ID",
         name: "baseId",
         type: "options",
         typeOptions: { loadOptionsMethod: "getBases" },
         default: "",
-        description: "Restrict to one Base. Leave empty to fire for every Base in the space.",
+        description:
+          'Restrict to one Base. Leave empty to fire for every Base in the space. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
       },
     ],
   };
@@ -103,7 +104,10 @@ export class BusabaseTrigger implements INodeType {
       async create(this: IHookFunctions): Promise<boolean> {
         const targetUrl = this.getNodeWebhookUrl("default");
         if (!targetUrl) {
-          throw new Error("Busabase Trigger: n8n did not provide a webhook URL to register.");
+          throw new NodeOperationError(
+            this.getNode(),
+            "n8n did not provide a webhook URL to register with Busabase.",
+          );
         }
         const eventParameter = this.getNodeParameter("event") as string;
         const baseId = (this.getNodeParameter("baseId") as string) || null;
@@ -129,10 +133,17 @@ export class BusabaseTrigger implements INodeType {
         if (!data.webhookRuleId) return true;
         try {
           await busabaseApiRequest.call(this, "DELETE", `/webhooks/${data.webhookRuleId}`);
-        } catch {
-          // Best-effort: a workflow being deactivated must not get stuck
-          // because the rule was already gone (e.g. the Base itself was
-          // deleted, cascading the rule with it).
+        } catch (error) {
+          // Deliberately non-fatal: deactivating a workflow must not get stuck
+          // because the rule was already gone (e.g. the Base was deleted,
+          // cascading the rule with it). But it is logged rather than
+          // swallowed, so "already gone" is distinguishable from "the API is
+          // down" when someone goes looking.
+          this.logger.warn(
+            `Busabase Trigger: could not delete webhook rule ${data.webhookRuleId} — ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
         }
         delete data.webhookRuleId;
         delete data.secret;

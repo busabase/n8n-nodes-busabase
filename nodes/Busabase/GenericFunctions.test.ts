@@ -66,6 +66,9 @@ describe("getBases", () => {
       { id: "bas_2", slug: "orders", name: "Orders" },
     ]);
     const options = await getBases.call(context as never);
+    // Not UI parameter definitions — these are the exact { name, value } pairs
+    // the loader returns for real Bases, slug casing included.
+    // eslint-disable-next-line n8n-nodes-base/node-param-display-name-miscased
     expect(options).toEqual([
       { name: "Contacts (contacts)", value: "bas_1" },
       { name: "Orders (orders)", value: "bas_2" },
@@ -130,6 +133,7 @@ describe("getBaseFields", () => {
     // choice NAME, not id — matches what a real record's headCommit.payload
     // reads back (verified against live data while building drizzle-busabase),
     // and Busabase's own `choiceMatches` accepts either, so this round-trips.
+    // eslint-disable-next-line n8n-nodes-base/node-param-display-name-miscased
     expect(result.fields[0]?.options).toEqual([
       { name: "To do", value: "To do" },
       { name: "Done", value: "Done" },
