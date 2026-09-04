@@ -2,6 +2,7 @@ import type {
   IAuthenticateGeneric,
   ICredentialTestRequest,
   ICredentialType,
+  Icon,
   INodeProperties,
 } from "n8n-workflow";
 
@@ -18,6 +19,7 @@ import type {
 export class BusabaseApi implements ICredentialType {
   name = "busabaseApi";
   displayName = "Busabase API";
+  icon: Icon = { light: "file:busabase.svg", dark: "file:busabase.dark.svg" };
   documentationUrl = "https://busabase.com/docs";
 
   properties: INodeProperties[] = [

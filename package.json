@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-busabase",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "n8n community node for Busabase — list/get/create/update records, and an instant trigger on new or updated records.",
   "license": "MIT",
   "homepage": "https://github.com/busabase/n8n-nodes-busabase",
@@ -31,7 +31,7 @@
     ]
   },
   "scripts": {
-    "build": "tsdown && cp nodes/Busabase/busabase.svg dist/nodes/Busabase/busabase.svg && cp nodes/BusabaseTrigger/busabase.svg dist/nodes/BusabaseTrigger/busabase.svg",
+    "build": "tsdown && cp nodes/Busabase/busabase.svg nodes/Busabase/busabase.dark.svg dist/nodes/Busabase/ && cp nodes/BusabaseTrigger/busabase.svg nodes/BusabaseTrigger/busabase.dark.svg dist/nodes/BusabaseTrigger/ && cp credentials/busabase.svg credentials/busabase.dark.svg dist/credentials/",
     "prepack": "pnpm run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

@@ -41,7 +41,7 @@ export class BusabaseTrigger implements INodeType {
   description: INodeTypeDescription = {
     displayName: "Busabase Trigger",
     name: "busabaseTrigger",
-    icon: "file:busabase.svg",
+    icon: { light: "file:busabase.svg", dark: "file:busabase.dark.svg" },
     group: ["trigger"],
     version: 1,
     subtitle: '={{$parameter["event"]}}',

@@ -21,7 +21,7 @@ export class Busabase implements INodeType {
   description: INodeTypeDescription = {
     displayName: "Busabase",
     name: "busabase",
-    icon: "file:busabase.svg",
+    icon: { light: "file:busabase.svg", dark: "file:busabase.dark.svg" },
     group: ["transform"],
     version: 1,
     usableAsTool: true,
