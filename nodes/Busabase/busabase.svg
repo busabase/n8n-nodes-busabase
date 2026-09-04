@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="busabase-logo-title busabase-logo-desc">
+  <title id="busabase-logo-title">Busabase logo</title>
+  <desc id="busabase-logo-desc">A compact B-shaped record mark for Busabase.</desc>
+  <rect x="96" y="96" width="832" height="832" rx="162" fill="#171717"/>
+  <rect x="251" y="251" width="523" height="155" rx="77.5" fill="#F8F8F7"/>
+  <rect x="251" y="435" width="390" height="155" rx="77.5" fill="#F8F8F7"/>
+  <rect x="251" y="620" width="523" height="155" rx="77.5" fill="#F8F8F7"/>
+</svg>

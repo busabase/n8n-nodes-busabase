@@ -1,0 +1,55 @@
+{
+  "name": "n8n-nodes-busabase",
+  "version": "0.1.0",
+  "description": "n8n community node for Busabase — list/get/create/update records, and an instant trigger on new or updated records.",
+  "license": "MIT",
+  "homepage": "https://github.com/busabase/n8n-nodes-busabase",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/busabase/n8n-nodes-busabase.git"
+  },
+  "bugs": "https://github.com/busabase/n8n-nodes-busabase/issues",
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/BusabaseApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Busabase/Busabase.node.js",
+      "dist/nodes/BusabaseTrigger/BusabaseTrigger.node.js"
+    ]
+  },
+  "scripts": {
+    "build": "tsdown && cp nodes/Busabase/busabase.svg dist/nodes/Busabase/busabase.svg && cp nodes/BusabaseTrigger/busabase.svg dist/nodes/BusabaseTrigger/busabase.svg",
+    "prepack": "pnpm run build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "biome format . --write && biome check .",
+    "lint:err": "biome format . --write && biome check . --write --diagnostic-level=error"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.2",
+    "n8n-workflow": "^2.16.0",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Busabase <support@busabase.com>"
+}
