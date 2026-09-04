@@ -1,8 +1,3 @@
-/* eslint-disable n8n-nodes-base/node-param-display-name-miscased --
-   The { name, value } pairs below are ASSERTION DATA: the exact options the
-   loader returns for real Bases, slug casing and all. They are not UI parameter
-   definitions, and title-casing them would make the tests assert something the
-   API never returns. */
 import { describe, expect, it, vi } from "vitest";
 import { busabaseApiRequest, getBaseFields, getBases } from "./GenericFunctions";
 
@@ -71,12 +66,16 @@ describe("getBases", () => {
       { id: "bas_2", slug: "orders", name: "Orders" },
     ]);
     const options = await getBases.call(context as never);
-    // Not UI parameter definitions — these are the exact { name, value } pairs
-    // the loader returns for real Bases, slug casing included.
-    expect(options).toEqual([
-      { name: "Contacts (contacts)", value: "bas_1" },
-      { name: "Orders (orders)", value: "bas_2" },
+    // Asserted field-by-field rather than against `{ name, value }` literals:
+    // that is also the shape of an n8n options entry, so a lint rule meant for
+    // UI definitions reads these as miscased display names. The Base's slug is
+    // genuinely lowercase, so "title-casing" them would assert something the
+    // loader never returns.
+    expect(options.map((option) => option.name)).toEqual([
+      "Contacts (contacts)",
+      "Orders (orders)",
     ]);
+    expect(options.map((option) => option.value)).toEqual(["bas_1", "bas_2"]);
   });
 
   it("returns an empty list rather than throwing when the space has no Bases", async () => {
@@ -137,10 +136,8 @@ describe("getBaseFields", () => {
     // choice NAME, not id — matches what a real record's headCommit.payload
     // reads back (verified against live data while building drizzle-busabase),
     // and Busabase's own `choiceMatches` accepts either, so this round-trips.
-    expect(result.fields[0]?.options).toEqual([
-      { name: "To do", value: "To do" },
-      { name: "Done", value: "Done" },
-    ]);
+    expect(result.fields[0]?.options?.map((option) => option.name)).toEqual(["To do", "Done"]);
+    expect(result.fields[0]?.options?.map((option) => option.value)).toEqual(["To do", "Done"]);
   });
 
   it("leaves options undefined for a field with no choices", async () => {
